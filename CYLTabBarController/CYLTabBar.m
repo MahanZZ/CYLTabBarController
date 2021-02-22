@@ -352,58 +352,6 @@ static void *const CYLTabBarContext = (void*)&CYLTabBarContext;
     }
 }
 
-/*!
- *  Capturing touches on a subview outside the frame of its superview.
- */
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-    //1. 边界情况：不能响应点击事件
-    
-    BOOL canNotResponseEvent = self.cyl_canNotResponseEvent;
-    if (canNotResponseEvent) {
-        return nil;
-    }
-    
-    //2. 优先处理 PlusButton （包括其突出的部分）、TabBarItems 未凸出的部分
-    //这一步主要是在处理只有两个 TabBarItems 的场景。
-    // 2.1先考虑clipsToBounds情况：子view超出部分没有显示出来
-    if (self.clipsToBounds && ![self pointInside:point withEvent:event]) {
-        return nil;
-    }
-    
-    if (self.plusButton) {
-        CGRect plusButtonFrame = self.plusButton.frame;
-        BOOL isInPlusButtonFrame = CGRectContainsPoint(plusButtonFrame, point);
-        if (isInPlusButtonFrame) {
-            return self.plusButton;
-        }
-    }
-    NSArray *tabBarButtons = self.tabBarButtonArray;
-    if (self.tabBarButtonArray.count == 0) {
-        tabBarButtons = [self cyl_visibleControls];
-    }
-    for (NSUInteger index = 0; index < tabBarButtons.count; index++) {
-        UIView *selectedTabBarButton = tabBarButtons[index];
-        CGRect selectedTabBarButtonFrame = selectedTabBarButton.frame;
-        BOOL isTabBarButtonFrame = CGRectContainsPoint(selectedTabBarButtonFrame, point);
-        if (isTabBarButtonFrame && !selectedTabBarButton.hidden) {
-            return selectedTabBarButton;
-        }
-    }
-    
-    //3. 最后处理 TabBarItems 凸出的部分、添加到 TabBar 上的自定义视图、点击到 TabBar 上的空白区域
-    UIView *result = [super hitTest:point withEvent:event];
-    if (result) {
-        return result;
-    }
-    
-    for (UIView *subview in self.subviews.reverseObjectEnumerator) {
-        CGPoint subPoint = [subview convertPoint:point fromView:self];
-        result = [subview hitTest:subPoint withEvent:event];
-        if (result) {
-            return result;
-        }
-    }
-    return nil;
-}
+
 
 @end
